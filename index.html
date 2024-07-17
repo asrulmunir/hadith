@@ -145,8 +145,8 @@
 
             try {
                 const data = await fetchWithFallback(
-                    `https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/${selectedEdition}/${hadithNum}.min.json`,
-                    `https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/${selectedEdition}/${hadithNum}.json`
+                    `https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ind-${selectedEdition}/${hadithNum}.min.json`,
+                    `https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ind-${selectedEdition}/${hadithNum}.json`
                 );
                 result.textContent = JSON.stringify(data, null, 2);
             } catch (error) {
