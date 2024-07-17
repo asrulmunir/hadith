@@ -1,143 +1,171 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hadith API Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+        select, input, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .error {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        pre {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hadith API Dashboard</h1>
+    
+    <div id="error" class="error" style="display: none;"></div>
 
-const HadithAPIComponent = () => {
-  const [editions, setEditions] = useState([]);
-  const [selectedEdition, setSelectedEdition] = useState('');
-  const [hadithNumber, setHadithNumber] = useState('');
-  const [result, setResult] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    fetchEditions();
-  }, []);
-
-  const fetchWithFallback = async (url, fallbackUrl) => {
-    try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
-    } catch (error) {
-      console.warn(`Error fetching from ${url}, trying fallback...`);
-      const fallbackResponse = await fetch(fallbackUrl);
-      if (!fallbackResponse.ok) {
-        throw new Error(`Fallback HTTP error! status: ${fallbackResponse.status}`);
-      }
-      return await fallbackResponse.json();
-    }
-  };
-
-  const fetchEditions = async () => {
-    try {
-      const data = await fetchWithFallback(
-        'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions.min.json',
-        'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions.json'
-      );
-      setEditions(Object.keys(data));
-      setError(null);
-    } catch (error) {
-      console.error('Error fetching editions:', error);
-      setError(`Error fetching editions: ${error.message}. Please check your internet connection and try again.`);
-    }
-  };
-
-  const fetchHadith = async () => {
-    if (!selectedEdition || !hadithNumber) {
-      setError('Please select an edition and enter a hadith number.');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await fetchWithFallback(
-        `https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/${selectedEdition}/${hadithNumber}.min.json`,
-        `https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/${selectedEdition}/${hadithNumber}.json`
-      );
-      setResult(JSON.stringify(data, null, 2));
-    } catch (error) {
-      console.error('Error fetching hadith:', error);
-      setError(`Error fetching hadith: ${error.message}. Please try again.`);
-      setResult('');
-    }
-    setLoading(false);
-  };
-
-  return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold text-center mb-6">Hadith API Dashboard</h1>
-
-      {error && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      <Card className="mb-6">
-        <CardHeader>
-          <h2 className="text-2xl font-semibold">Features</h2>
-        </CardHeader>
-        <CardContent>
-          <ul className="list-disc pl-5">
+    <div class="card">
+        <h2>Features</h2>
+        <ul>
             <li>Free & Blazing Fast response</li>
             <li>No Rate limits</li>
             <li>Multiple Languages</li>
             <li>Multiple Grades</li>
-          </ul>
-        </CardContent>
-      </Card>
-
-      <Card className="mb-6">
-        <CardHeader>
-          <h2 className="text-2xl font-semibold">Fetch Hadith</h2>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col space-y-4">
-            <Select onValueChange={setSelectedEdition}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select Edition" />
-              </SelectTrigger>
-              <SelectContent>
-                {editions.map((edition) => (
-                  <SelectItem key={edition} value={edition}>
-                    {edition}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Input
-              type="number"
-              placeholder="Enter Hadith Number"
-              value={hadithNumber}
-              onChange={(e) => setHadithNumber(e.target.value)}
-            />
-            <Button onClick={fetchHadith} disabled={loading}>
-              {loading ? 'Loading...' : 'Fetch Hadith'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <h2 className="text-2xl font-semibold">Result</h2>
-        </CardHeader>
-        <CardContent>
-          <pre className="bg-gray-100 p-4 rounded-md overflow-x-auto">
-            {result || 'No result yet. Fetch a hadith to see the result.'}
-          </pre>
-        </CardContent>
-      </Card>
+        </ul>
     </div>
-  );
-};
 
-export default HadithAPIComponent;
+    <div class="card">
+        <h2>Fetch Hadith</h2>
+        <select id="editionSelect">
+            <option value="">Select Edition</option>
+        </select>
+        <input type="number" id="hadithNumber" placeholder="Enter Hadith Number">
+        <button id="fetchButton">Fetch Hadith</button>
+    </div>
+
+    <div class="card">
+        <h2>Result</h2>
+        <pre id="result">No result yet. Fetch a hadith to see the result.</pre>
+    </div>
+
+    <script>
+        const editionSelect = document.getElementById('editionSelect');
+        const hadithNumber = document.getElementById('hadithNumber');
+        const fetchButton = document.getElementById('fetchButton');
+        const result = document.getElementById('result');
+        const errorDiv = document.getElementById('error');
+
+        async function fetchWithFallback(url, fallbackUrl) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.warn(`Error fetching from ${url}, trying fallback...`);
+                const fallbackResponse = await fetch(fallbackUrl);
+                if (!fallbackResponse.ok) {
+                    throw new Error(`Fallback HTTP error! status: ${fallbackResponse.status}`);
+                }
+                return await fallbackResponse.json();
+            }
+        }
+
+        async function fetchEditions() {
+            try {
+                const data = await fetchWithFallback(
+                    'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions.min.json',
+                    'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions.json'
+                );
+                Object.keys(data).forEach(edition => {
+                    const option = document.createElement('option');
+                    option.value = edition;
+                    option.textContent = edition;
+                    editionSelect.appendChild(option);
+                });
+                errorDiv.style.display = 'none';
+            } catch (error) {
+                console.error('Error fetching editions:', error);
+                showError(`Error fetching editions: ${error.message}. Please check your internet connection and try again.`);
+            }
+        }
+
+        async function fetchHadith() {
+            const selectedEdition = editionSelect.value;
+            const hadithNum = hadithNumber.value;
+
+            if (!selectedEdition || !hadithNum) {
+                showError('Please select an edition and enter a hadith number.');
+                return;
+            }
+
+            fetchButton.disabled = true;
+            fetchButton.textContent = 'Loading...';
+            errorDiv.style.display = 'none';
+
+            try {
+                const data = await fetchWithFallback(
+                    `https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/${selectedEdition}/${hadithNum}.min.json`,
+                    `https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/${selectedEdition}/${hadithNum}.json`
+                );
+                result.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.error('Error fetching hadith:', error);
+                showError(`Error fetching hadith: ${error.message}. Please try again.`);
+                result.textContent = 'No result yet. Fetch a hadith to see the result.';
+            }
+
+            fetchButton.disabled = false;
+            fetchButton.textContent = 'Fetch Hadith';
+        }
+
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        fetchButton.addEventListener('click', fetchHadith);
+        fetchEditions();
+    </script>
+</body>
+</html>
