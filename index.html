@@ -13,7 +13,7 @@
             margin: 0 auto;
             padding: 20px;
         }
-        h1, h2 {
+        h1, h2, h3 {
             color: #2c3e50;
         }
         .card {
@@ -50,11 +50,23 @@
             border-radius: 4px;
             margin-bottom: 20px;
         }
-        pre {
-            background-color: #f9f9f9;
-            padding: 10px;
-            border-radius: 4px;
-            overflow-x: auto;
+        #result {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .hadith-info {
+            margin-bottom: 15px;
+        }
+        .hadith-text {
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+        .grades-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .grades-list li {
+            margin-bottom: 5px;
         }
     </style>
 </head>
@@ -84,7 +96,7 @@
 
     <div class="card">
         <h2>Result</h2>
-        <pre id="result">No result yet. Fetch a hadith to see the result.</pre>
+        <div id="result">No result yet. Fetch a hadith to see the result.</div>
     </div>
 
     <script>
@@ -148,7 +160,7 @@
                     `https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ind-${selectedEdition}/${hadithNum}.min.json`,
                     `https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ind-${selectedEdition}/${hadithNum}.json`
                 );
-                result.textContent = JSON.stringify(data, null, 2);
+                displayHadith(data);
             } catch (error) {
                 console.error('Error fetching hadith:', error);
                 showError(`Error fetching hadith: ${error.message}. Please try again.`);
@@ -157,6 +169,39 @@
 
             fetchButton.disabled = false;
             fetchButton.textContent = 'Fetch Hadith';
+        }
+
+        function displayHadith(data) {
+            if (!data || !data.hadiths || data.hadiths.length === 0) {
+                result.textContent = 'No hadith data available.';
+                return;
+            }
+
+            const hadith = data.hadiths[0];
+            const { metadata } = data;
+
+            let html = `
+                <h3>${metadata.name}</h3>
+                <div class="hadith-info">
+                    <strong>Section:</strong> ${Object.values(metadata.section)[0]}<br>
+                    <strong>Hadith Number:</strong> ${hadith.hadithnumber}<br>
+                    <strong>Arabic Number:</strong> ${hadith.arabicnumber}
+                </div>
+                <div class="hadith-text">
+                    ${hadith.text}
+                </div>
+                <h4>Grades:</h4>
+                <ul class="grades-list">
+                    ${hadith.grades.map(grade => `<li><strong>${grade.name}:</strong> ${grade.grade}</li>`).join('')}
+                </ul>
+                <h4>Reference:</h4>
+                <div>
+                    <strong>Book:</strong> ${hadith.reference.book}<br>
+                    <strong>Hadith:</strong> ${hadith.reference.hadith}
+                </div>
+            `;
+
+            result.innerHTML = html;
         }
 
         function showError(message) {
